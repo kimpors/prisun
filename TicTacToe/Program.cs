@@ -65,12 +65,19 @@ namespace TicTacToe
                     }
                 }
 
+
+
+
+
                 // Логіка вийграша 
                 if (field[0] == field[1] && field[1] == field[2] ||
                     field[3] == field[4] && field[4] == field[5] ||
                     field[6] == field[7] && field[7] == field[8] ||
                     field[0] == field[4] && field[4] == field[8] ||
-                    field[2] == field[4] && field[4] == field[5])
+                    field[2] == field[4] && field[4] == field[6] ||
+                    field[0] == field[3] && field[3] == field[6] ||
+                    field[1] == field[4] && field[4] == field[7] ||
+                    field[2] == field[5] && field[5] == field[8] )
                 {
                     Console.Clear();
                     PrintField(field);
