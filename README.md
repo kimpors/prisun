@@ -1,12 +1,11 @@
 # TicTacToe
-Just game. Log don't work.
 
-Donwload: [here](https://github.com/kimpors/TicTacToe/releases)
+Simple game.
 
 Menu:
 
-![](Images/Menu.png)
+![Menu](Images/Menu.png)
 
 Game:
 
-![](Images/Game.png)
+![Game](Images/Game.png)

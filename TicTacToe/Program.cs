@@ -1,128 +1,95 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
+﻿using TicTacToe.Model;
 
-namespace TicTacToe
+namespace TicTacToe;
+
+public class Program
 {
-
-    struct Player
+  public static bool CalculateTurn(List<char> field)
+  {
+    List<List<int>>patterns = new()
     {
-        public int Score { get; set; }
-        public char Symbol { get; set; }
-        public string Name { get; set; }
+      new() {0, 1, 2},
+      new() {3, 4, 5},
+      new() {6, 7, 8},
+      new() {0, 4, 8},
+      new() {2, 4, 6},
+      new() {0, 3, 6},
+      new() {1, 4, 7},
+      new() {2, 5, 8},
+    };
 
+    return patterns.Exists(p => p.DistinctBy(u => field[u]).Count() == 1);
+  }
 
-       public Player(int score, char symbol , string name)
-        {
-            Score = score;
-            Symbol = symbol;
-            Name = name;
-        }
+  public static void Render(List<char> field, Player player)
+  {
+    Console.WriteLine($"{field[0]} | {field[1]} | {field[2]} \t\t turn {player.Name}");
+    Console.WriteLine($"{field[3]} | {field[4]} | {field[5]}");
+    Console.WriteLine($"{field[6]} | {field[7]} | {field[8]}");
+  }
 
-    }
+  public static void Main()
+  {
+    bool isDone = false;
 
-
-
-    
-    class Program
+    do
     {
+      Console.WriteLine("1.Play\n2.Quit");
 
+      char key = Console.ReadKey(true).KeyChar;
 
-        // Вивод поля
-        static void PrintField(char[] field, Player player)
+      switch (Console.ReadKey(true).KeyChar)
+      {
+        case '1':
+          isDone = true;
+          break;
+        case '2':
+          return;
+
+          default:
+          Console.WriteLine("Hmm try again");
+          Console.ReadKey(true);
+          break;
+      }
+    } while (!isDone);
+
+    List<char> Field = "123456789".ToCharArray().ToList();
+
+    Player p1 = new("John", 'X');
+    Player p2 = new("Nica", 'O');
+    Player curr = new();
+
+    for (int i = 0; i < 9; i++)
+    {
+      Console.Clear();
+
+      curr = i % 2 == 0 ? p1 : p2;
+      Render(Field, curr);
+
+      byte input;
+      byte.TryParse(Console.ReadKey(true).KeyChar.ToString(), out input);
+
+      if (input > 0)
+      {
+        if (Field[input - 1] == Convert.ToChar(input.ToString()))
         {
-            Console.WriteLine($"{field[0]} | {field[1]} | {field[2]} \t\t step {player.Name}");
-            Console.WriteLine($"{field[3]} | {field[4]} | {field[5]}");
-            Console.WriteLine($"{field[6]} | {field[7]} | {field[8]}");
-
+          Field[input - 1] = curr.Skin;
         }
-           
-        static void Main(string[] args)
-        {
-            // Меню
+      }
+      else
+      {
+        i--;
+      }
 
-            bool isDone = false;
-            do
-            {
-                Console.WriteLine("1.Play\n2.Log\n3.Quit");
-                string choise = Console.ReadKey(true).KeyChar.ToString();
+      if (CalculateTurn(Field))
+      {
+        Console.Clear();
+        Render(Field, curr);
 
-                switch (choise)
-                {
-                    case "1":
-                        isDone = true;
-                        break;
-
-                    case "3":
-                        return;
-
-                    default:
-                        Console.WriteLine("Hmmm Try again");
-                        Console.ReadKey(true);
-                        break;
-                }
-            } while (!isDone);
-
-            //Ігра
-
-            char[] field = { '1', '2', '3', '4', '5', '6', '7', '8', '9' };
-
-
-            Player P1 = new Player(0, 'X', "John");
-            Player P2 = new Player(0, 'O', "Nica");
-            Player playerStep = new Player(); // Показивает хто ходить
-
-            for (int i = 0; i < 9; i++)
-            {
-                Console.Clear();
-
-
-                playerStep = i % 2 == 0 ? P1 : P2;
-
-
-                PrintField(field, playerStep);
-
-
-                byte input;
-                byte.TryParse(Console.ReadKey(true).KeyChar.ToString(), out input);
-
-                //Ето для того чтоби не можна було замінити уже поставлений знак
-                if (input > 0)
-                {
-                    if (field[input - 1] == Convert.ToChar(input.ToString()))
-                    {
-                        field[input - 1] = playerStep.Symbol;
-                    }
-                    else
-                    {
-                        i--;
-                    }
-                }
-              
-
-
-                // Логіка вийграша 
-                //Да да я знаю  громосткій кусок кода
-                if (field[0] == field[1] && field[1] == field[2] ||
-                    field[3] == field[4] && field[4] == field[5] ||
-                    field[6] == field[7] && field[7] == field[8] ||
-                    field[0] == field[4] && field[4] == field[8] ||
-                    field[2] == field[4] && field[4] == field[6] ||
-                    field[0] == field[3] && field[3] == field[6] ||
-                    field[1] == field[4] && field[4] == field[7] ||
-                    field[2] == field[5] && field[5] == field[8] )
-                {
-                    Console.Clear();
-                    PrintField(field,playerStep);
-                    Console.WriteLine($"{playerStep.Name} win");
-
-
-                    Console.ReadKey(true);
-                    return;
-                }
-            }
-        }
+        Console.WriteLine($"{curr.Name} win");
+        Console.ReadKey(true);
+        return;
+      }
     }
+  }
 }
