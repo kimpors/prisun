@@ -1,12 +1,13 @@
 use std::io::{self, Write};
 use rand::Rng;
 
-const SIZE: usize = 9;
+const SIZE: usize = 3;
 
 #[derive(Debug)]
 enum GameState {
     Win,
     Lose,
+    Draw,
     None,
 }
 
@@ -16,125 +17,139 @@ impl GameState {
     }
 }
 
-fn render(field: [char; SIZE]) {
-    let length = SIZE / 3;
-
-    for y in 0..length {
-        for x in 0..length {
-            if x == length - 1 {
-                print!("{}", field[x + 3 * y]);
+fn render(field: [[char; SIZE]; SIZE]) {
+    for row in field {
+        for (i, ceil) in row.iter().enumerate() {
+            if i == row.len() - 1 {
+                print!("{ceil}");
             } else {
-                print!("{} | ", field[x + 3 * y]);
+                print!("{ceil} | ");
             }
         }
         println!();
     }
 }
 
-fn check_win(field: [char; SIZE]) -> GameState {
-    let win = ['x', 'x', 'x'];
-    let lose = ['o', 'o', 'o'];
+fn check_win(field: [[char; SIZE]; SIZE]) -> GameState {
+    let win: [char; SIZE] = ['x', 'x', 'x'];
+    let lose: [char; SIZE] = ['o', 'o', 'o'];
 
-    // Vertical
-    if field[0..3] == win { return GameState::Win; }
-    else if field[0..3] == lose { return GameState::Lose; }
-
-    if field[3..6] == win { return GameState::Win; }
-    else if field[3..6] == lose { return GameState::Lose; }
-
-    if field[6..9] == win { return GameState::Win; }
-    else if field[6..9] == lose { return GameState::Lose; }
-
-    // Horizontal
-    if [field[0], field[3], field[6]] == win { return GameState::Win; }
-    else if [field[0], field[3], field[6]] == lose { return GameState::Lose; }
-
-    if [field[1], field[4], field[7]] == win { return GameState::Win; }
-    else if [field[1], field[4], field[7]] == lose { return GameState::Lose; }
-
-    if [field[2], field[5], field[8]] == win { return GameState::Win; }
-    else if [field[2], field[5], field[8]] == lose { return GameState::Lose; }
-
-    // Diagonal
-    if [field[0], field[4], field[8]] == win { return GameState::Win; }
-    else if [field[0], field[4], field[8]] == lose { return GameState::Lose; }
-
-    if [field[2], field[4], field[6]] == win { return GameState::Win; }
-    else if [field[2], field[4], field[6]] == lose { return GameState::Lose; }
-
-    return GameState::None;
-}
-
-fn bot_move(field: &mut [char; SIZE]) {
-    let bot = rand::thread_rng().gen_range(0..SIZE);
-
-    println!("{bot} -> {}", field[bot]);
-    if field[bot] != 'x' && field[bot] != 'o' {
-        field[bot] = 'o';
-        return;
+    // Vertical Pattern
+    for &row in field.as_slice() {
+        if row == win {
+            return GameState::Win;
+        } else if row == lose {
+            return GameState::Lose;
+        }
     }
 
-    let mut i = 0;
-    while i < SIZE {
-        if field[i] != 'x' && field[i] != 'o' {
-            field[i] = 'o';
-            break;
-        }
+    // Horizontal Pattern
+    for i in 0..SIZE {
+        let horizontal: &[char] = &[field[0][i], field[1][i], field[2][i]];
 
-        i += 1;
+        if horizontal == win {
+            return GameState::Win;
+        } else if horizontal == lose {
+            return GameState::Lose;
+        }
+    }
+
+    // Diagonal Pattern
+    for i in 0..2 {
+        let diagonal: &[char] = &[field[0][i * 2], field[1][1], field[2][2 - i * 2]];
+        if diagonal == win {
+            return GameState::Win;
+        } else if diagonal == lose {
+            return GameState::Lose;
+        }
+    }
+
+    for row in field {
+        for ceil in row {
+            if ceil.is_numeric() {
+                return GameState::None;
+            }
+        }
+    }
+
+    return GameState::Draw;
+}
+
+fn bot_move(field: &mut [[char; SIZE]; SIZE]) {
+    let row = rand::thread_rng().gen_range(0..SIZE);
+    let column = rand::thread_rng().gen_range(0..SIZE);
+
+    match field[row][column] {
+        'x' => (),
+        'o' => (),
+        _ => {
+            field[row][column] = 'o';
+            return;
+        } 
+    }
+
+    for row in field {
+        for (i, ceil) in row.iter().enumerate() {
+            match ceil {
+                'x' => (),
+                'o' => (),
+                _ => {
+                    row[i] = 'o';
+                    return;
+                },
+            };
+        }
     }
 }
 
 fn main() {
-    let mut field = ['1', '2', '3',
-                    '4', '5', '6',
-                    '7', '8', '9'];
+    let mut field = [['1', '2', '3'],
+                    ['4', '5', '6'],
+                    ['7', '8', '9']];
 
-    let mut state = GameState::None;
-    let mut count = 0;
-    let mut result: usize;
+
+    let mut row: usize;
+    let mut column: usize;
     let mut buffer = String::new();
 
     println!("Tetris");
-    while count <= SIZE / 2 {
+    let state = loop {
         render(field);
 
         print!("\nEnter free ceil: ");
-        io::stdout().flush();
+        let _ = io::stdout().flush();
 
         io::stdin()
             .read_line(&mut buffer)
-            .expect("[Failed to read line]");
+            .expect("Error while readling a line.");
 
-        result = buffer.trim().parse()
-            .expect("[Enter a number]");
+        column = buffer.trim().parse()
+            .expect("Error, enter a number.");
 
         buffer = String::new();
 
-        if result < 1 || result > 9 { continue; }
-        if field[result - 1] == 'x' || field[result - 1] == 'o' { continue; }
+        if column < 1 || column > 9 { continue; }
 
-        field[result - 1] = 'x';
-        bot_move(&mut field);
-
-        match check_win(field) {
-            GameState::Win => {
-                state = GameState::Win;
-                break;
-            } ,
-            GameState::Lose => {
-                state = GameState::Lose;
-                break;
-            },
-            GameState::None => count += 1,
+        row = 0;
+        while column > 3 {
+            column -= 3;
+            row += 1;
         }
-    }
 
-    if let GameState::None = state {
-        println!("Draw");
-    } else {
-        state.show();
-    }
+        match field[row][column - 1] {
+            'x' => continue,
+            'o' => continue,
+            _ => field[row][column - 1] = 'x',
+        }
+
+        bot_move(&mut field);
+        match check_win(field) {
+            GameState::None => (),
+            value => break value,
+        }
+    };
 
     render(field);
+    println!();
+    state.show();
 }
