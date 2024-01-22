@@ -1,9 +1,11 @@
-use std::io::{self, Write};
-use rand::Rng;
+extern crate termion;
+
+use termion::color; 
+use std::{collections::HashMap, fmt, io::{self, Write}};
+use termion::terminal_size;
 
 const SIZE: usize = 3;
 
-#[derive(Debug)]
 enum GameState {
     Win,
     Lose,
@@ -11,23 +13,58 @@ enum GameState {
     None,
 }
 
-impl GameState {
-    fn show(&self) {
-        println!("{:?}", self);
+impl fmt::Display for GameState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            GameState::Win => write!(f, "Win"),
+            GameState::Lose => write!(f, "Lose"),
+            GameState::Draw => write!(f, "Draw"),
+            GameState::None => write!(f, ""),
+        }
     }
 }
 
-fn render(field: [[char; SIZE]; SIZE]) {
+fn center_offset(cols: &u16) -> String {
+    let mut offset = String::new();
+
+    for _ in 0..cols / 16 {
+        offset.push('\t');
+    }
+
+    return offset;
+}
+
+
+fn render(field: [[char; SIZE]; SIZE], state: &GameState) {
+    let offset = center_offset(&terminal_size()
+                               .expect("Error while getting terminal size.").0);
+
+    match state {
+        GameState::None => (),
+        s => {
+            print!("{}", color::Fg(color::Yellow));
+            println!("{offset}{}{}", " ".repeat(8 - s.to_string().len()), s);
+            println!("{}", color::Fg(color::Reset));
+        } 
+    }
+
+    print!("{}", color::Fg(color::Blue));
+
     for row in field {
+        print!("{offset}");
+
         for (i, ceil) in row.iter().enumerate() {
             if i == row.len() - 1 {
-                print!("{ceil}");
+                print!(" {ceil} ");
             } else {
-                print!("{ceil} | ");
+                print!(" {ceil} | ");
             }
         }
-        println!();
+
+        println!("\n{offset}{}", "-".repeat(13));
     }
+
+    print!("{}", color::Fg(color::Red));
 }
 
 fn check_win(field: [[char; SIZE]; SIZE]) -> GameState {
@@ -64,6 +101,7 @@ fn check_win(field: [[char; SIZE]; SIZE]) -> GameState {
         }
     }
 
+    // Check For A Draw
     for row in field {
         for ceil in row {
             if ceil.is_numeric() {
@@ -76,26 +114,26 @@ fn check_win(field: [[char; SIZE]; SIZE]) -> GameState {
 }
 
 fn bot_move(field: &mut [[char; SIZE]; SIZE]) {
-    let row = rand::thread_rng().gen_range(0..SIZE);
-    let column = rand::thread_rng().gen_range(0..SIZE);
-
-    match field[row][column] {
+    match field[1][1] {
         'x' => (),
         'o' => (),
         _ => {
-            field[row][column] = 'o';
+            field[1][1] = 'o';
             return;
-        } 
+        }
     }
+
+    let mut variants = HashMap::new();
 
     for row in field {
         for (i, ceil) in row.iter().enumerate() {
             match ceil {
                 'x' => (),
                 'o' => (),
-                _ => {
+                c => {
                     row[i] = 'o';
-                    return;
+                    variants.insert(i, check_win(field));
+                    row[i] = *c;
                 },
             };
         }
@@ -114,7 +152,7 @@ fn main() {
 
     println!("Tetris");
     let state = loop {
-        render(field);
+        render(field, &GameState::None);
 
         print!("\nEnter free ceil: ");
         let _ = io::stdout().flush();
@@ -149,7 +187,5 @@ fn main() {
         }
     };
 
-    render(field);
-    println!();
-    state.show();
+    render(field, &state);
 }
