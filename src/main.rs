@@ -1,7 +1,7 @@
 extern crate termion;
 
 use termion::color; 
-use std::{collections::HashMap, fmt, io::{self, Write}};
+use std::{fmt, io::{self, Write}, collections::HashMap};
 use termion::terminal_size;
 
 const SIZE: usize = 3;
@@ -39,6 +39,7 @@ fn render(field: [[char; SIZE]; SIZE], state: &GameState) {
     let offset = center_offset(&terminal_size()
                                .expect("Error while getting terminal size.").0);
 
+    // Header
     match state {
         GameState::None => (),
         s => {
@@ -50,6 +51,7 @@ fn render(field: [[char; SIZE]; SIZE], state: &GameState) {
 
     print!("{}", color::Fg(color::Blue));
 
+    // Main Field
     for row in field {
         print!("{offset}");
 
@@ -123,19 +125,46 @@ fn bot_move(field: &mut [[char; SIZE]; SIZE]) {
         }
     }
 
-    let mut variants = HashMap::new();
+    let mut wins: Vec<(usize, usize)> = Vec::new();
+
+    for y in 0..SIZE {
+        for x in 0..SIZE {
+            match field[y][x] {
+                'x' => (),
+                'y' => (),
+                c => {
+                    field[y][x] = 'o';
+
+                    match check_win(*field) {
+                        GameState::Lose => wins.push((y, x)),
+                        _ => {
+                            print!("{}-", field[y][x]);
+                            field[y][x] = c;
+                            println!("{}", field[y][x]);
+                        } ,
+                    }
+                }
+            }
+        }
+    }
+
+    if !wins.is_empty() {
+        let first = wins.first().unwrap();
+        field[first.0][first.1] = 'o';
+        return;
+    }
 
     for row in field {
-        for (i, ceil) in row.iter().enumerate() {
+        for ceil in row {
             match ceil {
                 'x' => (),
                 'o' => (),
                 c => {
-                    row[i] = 'o';
-                    variants.insert(i, check_win(field));
-                    row[i] = *c;
-                },
-            };
+                    print!("{c}");
+                    *c = 'o';
+                    return;
+                }
+            }
         }
     }
 }
@@ -150,7 +179,6 @@ fn main() {
     let mut column: usize;
     let mut buffer = String::new();
 
-    println!("Tetris");
     let state = loop {
         render(field, &GameState::None);
 
@@ -163,8 +191,6 @@ fn main() {
 
         column = buffer.trim().parse()
             .expect("Error, enter a number.");
-
-        buffer = String::new();
 
         if column < 1 || column > 9 { continue; }
 
@@ -180,11 +206,14 @@ fn main() {
             _ => field[row][column - 1] = 'x',
         }
 
+
         bot_move(&mut field);
         match check_win(field) {
             GameState::None => (),
             value => break value,
         }
+
+        buffer = String::new();
     };
 
     render(field, &state);
