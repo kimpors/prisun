@@ -1,7 +1,7 @@
 extern crate termion;
 
 use termion::color; 
-use std::{fmt, io::{self, Write}, collections::HashMap};
+use std::{fmt, io::{self, Write}};
 use termion::terminal_size;
 
 const SIZE: usize = 3;
@@ -36,8 +36,16 @@ fn center_offset(cols: &u16) -> String {
 
 
 fn render(field: [[char; SIZE]; SIZE], state: &GameState) {
-    let offset = center_offset(&terminal_size()
-                               .expect("Error while getting terminal size.").0);
+    let size = terminal_size().unwrap();
+    let offset = center_offset(&size.0);
+
+    println!("{}", size.1);
+
+    let pos = termion::cursor::Goto(1, size.1 / 2);
+    let clear = termion::clear::All;
+
+    println!("{clear}{pos}");
+
 
     // Header
     match state {
@@ -177,22 +185,30 @@ fn main() {
 
     let mut row: usize;
     let mut column: usize;
-    let mut buffer = String::new();
+    let mut buf;
 
     let state = loop {
+        buf = String::new();
         render(field, &GameState::None);
 
         print!("\nEnter free ceil: ");
         let _ = io::stdout().flush();
 
         io::stdin()
-            .read_line(&mut buffer)
-            .expect("Error while readling a line.");
+            .read_line(&mut buf)
+            .unwrap();
 
-        column = buffer.trim().parse()
-            .expect("Error, enter a number.");
+        print!("{buf}");
 
-        if column < 1 || column > 9 { continue; }
+        column = match buf.trim().parse() {
+            Ok(value) => value,
+            Err(_) => continue,
+        };
+
+        match column {
+            1..=9 => (),
+            _ => continue,
+        }
 
         row = 0;
         while column > 3 {
@@ -212,8 +228,6 @@ fn main() {
             GameState::None => (),
             value => break value,
         }
-
-        buffer = String::new();
     };
 
     render(field, &state);
