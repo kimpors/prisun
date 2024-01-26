@@ -1,19 +1,23 @@
 pub mod state;
+pub mod render;
 
+use render::Mode;
 use state::State;
-use termion::{color, terminal_size};
 
 pub struct Game {
     size: u8,
     field: Vec<Vec<char>>,
+    render: Mode,
     state: State,
 }
+
 
 impl Game {
     pub fn new() -> Self {
         Self {
             size: 3,
             state: State::None,
+            render: Mode::Terminal,
             field: vec![vec!['1', '2', '3'],
                         vec!['4', '5', '6'],
                         vec!['7', '8', '9']],
@@ -96,49 +100,7 @@ impl Game {
         return &self.state;
     }
 
-
     pub fn draw(&self) {
-        let offset = self.get_offset();
-
-        let pos = termion::cursor::Goto(1, offset.1);
-        let clear = termion::clear::All;
-
-        println!("{clear}{pos}");
-
-        // Header
-        match &self.state {
-            State::None => (),
-            other => {
-                print!("{}", color::Fg(color::Yellow));
-                println!("{}{}{}", "\t".repeat(offset.0 as usize),  " ".repeat(8 - other.to_string().len()), other);
-                println!("{}", color::Fg(color::Reset));
-            } 
-        }
-
-        print!("{}", color::Fg(color::Blue));
-
-
-        // Main Field
-        for row in &self.field {
-            print!("{}", "\t".repeat(offset.0 as usize));
-
-            for (i, ceil) in row.iter().enumerate() {
-                if i == row.len() - 1 {
-                    print!(" {ceil} ");
-                } else {
-                    print!(" {ceil} | ");
-                }
-            }
-
-            println!("\n{}{}", "\t".repeat(offset.0.into()), "-".repeat(13));
-        }
-
-        print!("{}", color::Fg(color::Red));
-    }
-
-    fn get_offset(&self) -> (u16, u16) {
-        let size = terminal_size().unwrap();
-
-        return (size.0 / 16, size.1 / 2);
+        self.render.draw(&self.state, &self.field);
     }
 }
