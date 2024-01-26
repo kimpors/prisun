@@ -1,5 +1,6 @@
 use std::io::{self, Write};
-use prisun::{Game, State};
+use prisun::Game;
+use prisun::state::State;
 
 fn main() {
     let mut buf;

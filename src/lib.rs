@@ -1,24 +1,7 @@
-use std::fmt;
+pub mod state;
+
+use state::State;
 use termion::{color, terminal_size};
-
-pub enum State {
-    Win,
-    Lose,
-    Draw,
-    None,
-}
-
-impl fmt::Display for State {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            State::Win => write!(f, "Win"),
-            State::Lose => write!(f, "Lose"),
-            State::Draw => write!(f, "Draw"),
-            State::None => write!(f, ""),
-        }
-    }
-}
-
 
 pub struct Game {
     size: u8,
@@ -108,58 +91,9 @@ impl Game {
     }
 
 
-    pub fn check_win(&mut self) -> State {
-        let win = vec!['x', 'x', 'x'];
-        let lose = vec!['o', 'o', 'o'];
-
-        // Vertical Pattern
-        for row in &self.field {
-            if *row == win {
-                self.state = State::Win;
-                return State::Win;
-            } else if *row == lose {
-                self.state = State::Lose;
-                return State::Lose;
-            }
-        }
-
-        // Horizontal Pattern
-        for i in 0..self.size as usize {
-            let horizontal: &[char] = &[self.field[0][i], self.field[1][i], self.field[2][i]];
-
-            if horizontal == win {
-                self.state = State::Win;
-                return State::Win;
-            } else if horizontal == lose {
-                self.state = State::Lose;
-                return State::Lose;
-            }
-        }
-
-        // Diagonal Pattern
-        for i in 0..2 {
-            let diagonal: &[char] = &[self.field[0][i * 2], self.field[1][1], self.field[2][2 - i * 2]];
-
-            if diagonal == win {
-                self.state = State::Win;
-                return State::Win;
-            } else if diagonal == lose {
-                self.state = State::Lose;
-                return State::Lose;
-            }
-        }
-
-        // Check For A Draw
-        for row in &self.field {
-            for ceil in row {
-                if ceil.is_numeric() {
-                    return State::None;
-                }
-            }
-        }
-
-        self.state = State::Draw;
-        return State::Draw;
+    pub fn check_win(&mut self) -> &State {
+        self.state = State::calculate(self);
+        return &self.state;
     }
 
 
