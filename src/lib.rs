@@ -37,12 +37,12 @@ impl Game {
         }
     }
 
-    pub fn set(&mut self, index: u8) -> Result<(), String> {
+    pub fn set(&mut self, index: u8) -> Result<(), &'static str> {
         let size = &self.size;
         let field = &mut self.field;
 
-        if index < 1 || index as u8 > size * size {
-            panic!("Wrong argument, expects from 1 to {}", size * size);
+        if index < 1 || index > size * size {
+            return Err("Argument don't in range.");
         }
 
         let mut row = 0;
@@ -53,48 +53,39 @@ impl Game {
             row += 1;
         }
 
-        let curr = &mut field[row][col - 1];
-
-        match curr {
-            'x' => (),
-            'o' => (),
-            _ => *curr = 'x',
+        if field[row][col - 1].is_numeric() {
+            field[row][col - 1] = 'x';
+        } else {
+            return Err("Already filled ceil.");
         }
 
-        Ok(())
+        return Ok(());
     }
 
     pub fn bot_move(&mut self) {
         let size = self.size as usize;
 
-        match &mut self.field[1][1]{
-            'x' => (),
-            'o' => (),
-            other => {
-                *other = 'o';
-                return;
-            }
+        if self.field[1][1].is_numeric() {
+            self.field[1][1] = 'o';
+            return;
         }
 
-        let mut wins: Vec<(usize, usize)> = Vec::new();
 
+        let mut wins = Vec::new();
 
         for y in 0..size {
             for x in 0..size {
-                match self.field[y][x] {
-                    'o' => (),
-                    'x' => (),
-                    other => {
-                        self.field[y][x] = 'o';
+                if self.field[y][x].is_numeric() {
+                    let other = self.field[y][x];
+                    self.field[y][x] = 'o';
 
-                        if let State::Lose = self.check_win() {
-                            self.field[y][x] = other;
-                            wins.push((y, x));
-                            continue;
-                        }
-
+                    if let State::Lose = self.check_win() {
                         self.field[y][x] = other;
-                    },
+                        wins.push((y, x));
+                        continue;
+                    }
+
+                    self.field[y][x] = other;
                 }
             }
         }
@@ -108,13 +99,9 @@ impl Game {
 
         for row in &mut self.field {
             for col in row {
-                match col {
-                    'x' => (),
-                    'o' => (),
-                    _ => {
-                        *col = 'o';
-                        return;
-                    },
+                if col.is_numeric() {
+                    *col = 'o';
+                    return;
                 }
             }
         }
@@ -126,11 +113,11 @@ impl Game {
         let lose = vec!['o', 'o', 'o'];
 
         // Vertical Pattern
-        for row in self.field.as_slice() {
-            if row.as_slice() == win {
+        for row in &self.field {
+            if *row == win {
                 self.state = State::Win;
                 return State::Win;
-            } else if row.as_slice() == lose {
+            } else if *row == lose {
                 self.state = State::Lose;
                 return State::Lose;
             }
@@ -152,6 +139,7 @@ impl Game {
         // Diagonal Pattern
         for i in 0..2 {
             let diagonal: &[char] = &[self.field[0][i * 2], self.field[1][1], self.field[2][2 - i * 2]];
+
             if diagonal == win {
                 self.state = State::Win;
                 return State::Win;

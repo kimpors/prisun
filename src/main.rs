@@ -21,10 +21,11 @@ fn main() {
             Err(_) => continue,
         };
 
-        if let Err(_) =
-            game.set(index) { continue; }
+
+        if let Err(_) = game.set(index) { continue; }
 
         game.bot_move();
+
 
         match game.check_win() {
             State::None => (),
