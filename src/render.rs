@@ -2,14 +2,14 @@ use termion::{color, terminal_size};
 
 use crate::state::State;
 
-pub enum Mode {
+pub enum RenderMode {
     Terminal,
 }
 
-impl Mode {
+impl RenderMode {
     pub fn draw(&self, state: &State, field: &Vec<Vec<char>>) {
         match self {
-            Mode::Terminal => draw_terminal(state, field),
+            RenderMode::Terminal => draw_terminal(state, field),
         }
     }
 }

@@ -1,32 +1,31 @@
-use std::io::{self, Write};
 use prisun::Game;
+use prisun::player::PlayerType;
 use prisun::state::State;
 
 fn main() {
-    let mut buf;
     let mut game = Game::new();
 
+    let hero = PlayerType::Player;
+    let enemy = PlayerType::Bot;
+
+
     loop {
-        buf = String::new();
         game.draw();
 
-        print!("\nEnter free ceil: ");
-        let _ = io::stdout().flush();
-
-        io::stdin()
-            .read_line(&mut buf)
-            .unwrap();
-
-        let index = match buf.trim().parse() {
-            Ok(value) => value,
+        match hero.r#move(&mut game) {
+            Ok(_) => (), 
             Err(_) => continue,
         };
 
+        match game.check_win() {
+            State::None => (),
+            _ => break,
+        }
 
-        if let Err(_) = game.set(index) { continue; }
-
-        game.bot_move();
-
+        match enemy.r#move(&mut game) {
+            Ok(_) => (),
+            Err(_) => continue,
+        }
 
         match game.check_win() {
             State::None => (),
