@@ -2,6 +2,8 @@ pub mod state;
 pub mod render;
 pub mod player;
 
+use std::fmt::Display;
+
 use render::Mode;
 use state::State;
 
@@ -78,5 +80,25 @@ impl Game {
 
     pub fn draw(&self) {
         self.render.draw(self);
+    }
+}
+
+impl Display for Game {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let mut result = String::new();
+
+        for row in &self.field {
+            for (i, col) in row.iter().enumerate() {
+                if i == row.len() - 1 {
+                    result.push_str(&format!(" {col} "));
+                } else {
+                    result.push_str(&format!(" {col} | "));
+                }
+            }
+
+            result.push_str(&format!("\n{}\n", "-".repeat(13)));
+        }
+
+        return write!(f, "{result}");
     }
 }

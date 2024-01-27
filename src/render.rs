@@ -38,18 +38,8 @@ fn draw_terminal(game: &Game) {
 
 
     // Main Field
-    for row in &game.field {
-        print!("{}", "\t".repeat(offset.0 as usize));
-
-        for (i, ceil) in row.iter().enumerate() {
-            if i == row.len() - 1 {
-                print!(" {ceil} ");
-            } else {
-                print!(" {ceil} | ");
-            }
-        }
-
-        println!("\n{}{}", "\t".repeat(offset.0.into()), "-".repeat(13));
+    for row in game.to_string().split('\n') {
+        println!("{}{row}", "\t".repeat(offset.0 as usize));
     }
 
     print!("{}", color::Fg(color::Red));
