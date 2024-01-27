@@ -118,43 +118,43 @@ mod test {
         assert_eq!(cases[2].0, cases[2].1);
         assert_eq!(cases[3].0, cases[3].1);
     }
-}
 
-fn cases() -> Vec<(String, String)> {
-    let case1 = Game::new();
+    fn cases() -> Vec<(String, String)> {
+        let case1 = Game::new();
 
-    let case2 = Game::build_with()
-        .field(vec![vec!['1', 'x', '3'],
-                    vec!['4', 'x', '6'],
-                    vec!['7', 'x', '9']]).build();
+        let case2 = Game::build_with()
+            .field(vec![vec!['1', 'x', '3'],
+                        vec!['4', 'x', '6'],
+                        vec!['7', 'x', '9']]).build();
 
-    let case3 = Game::build_with()
-        .field(vec![vec!['1', '2', '3'],
-                    vec!['o', 'o', 'o'],
-                    vec!['7', '8', '9']]).build();
+        let case3 = Game::build_with()
+            .field(vec![vec!['1', '2', '3'],
+                        vec!['o', 'o', 'o'],
+                        vec!['7', '8', '9']]).build();
 
-    let case4 = Game::build_with()
-        .field(vec![vec!['x', '2', 'o'],
-                    vec!['4', 'o', '6'],
-                    vec!['o', '8', 'x']]).build();
+        let case4 = Game::build_with()
+            .field(vec![vec!['x', '2', 'o'],
+                        vec!['4', 'o', '6'],
+                        vec!['o', '8', 'x']]).build();
 
-    let underline = "-".repeat(13);
+        let underline = "-".repeat(13);
 
-    let case1 = (case1.to_string(), format!(" 1 |  2 |  3 \n{underline}\n \
-                                             4 |  5 |  6 \n{underline}\n \
-                                             7 |  8 |  9 \n{underline}\n"));
+        let case1 = (case1.to_string(), format!(" 1 |  2 |  3 \n{underline}\n \
+                                                 4 |  5 |  6 \n{underline}\n \
+                                                 7 |  8 |  9 \n{underline}\n"));
 
-    let case2 = (case2.to_string(), format!(" 1 |  x |  3 \n{underline}\n \
-                                             4 |  x |  6 \n{underline}\n \
-                                             7 |  x |  9 \n{underline}\n"));
+        let case2 = (case2.to_string(), format!(" 1 |  x |  3 \n{underline}\n \
+                                                 4 |  x |  6 \n{underline}\n \
+                                                 7 |  x |  9 \n{underline}\n"));
 
-    let case3 = (case3.to_string(), format!(" 1 |  2 |  3 \n{underline}\n \
-                                             o |  o |  o \n{underline}\n \
-                                             7 |  8 |  9 \n{underline}\n"));
+        let case3 = (case3.to_string(), format!(" 1 |  2 |  3 \n{underline}\n \
+                                                 o |  o |  o \n{underline}\n \
+                                                 7 |  8 |  9 \n{underline}\n"));
 
-    let case4 = (case4.to_string(), format!(" x |  2 |  o \n{underline}\n \
-                                             4 |  o |  6 \n{underline}\n \
-                                             o |  8 |  x \n{underline}\n"));
+        let case4 = (case4.to_string(), format!(" x |  2 |  o \n{underline}\n \
+                                                 4 |  o |  6 \n{underline}\n \
+                                                 o |  8 |  x \n{underline}\n"));
 
-    return vec![case1, case2, case3, case4];
+        return vec![case1, case2, case3, case4];
+    }
 }

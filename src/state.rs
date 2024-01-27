@@ -78,10 +78,10 @@ mod test {
     fn game_state() {
         let cases = cases();
 
-        assert_eq!(State::None, State::calculate(&cases[0]));
-        assert_eq!(State::Win, State::calculate(&cases[1]));
-        assert_eq!(State::Lose, State::calculate(&cases[2]));
-        assert_eq!(State::Draw, State::calculate(&cases[3]));
+        assert_eq!(cases[0].0, cases[0].1);
+        assert_eq!(cases[1].0, cases[1].1);
+        assert_eq!(cases[2].0, cases[2].1);
+        assert_eq!(cases[3].0, cases[3].1);
     }
 
     #[test]
@@ -92,7 +92,7 @@ mod test {
         assert_eq!(State::None.to_string(), "");
     }
 
-    fn cases() -> Vec<Game> {
+    fn cases() -> Vec<(State, State)> {
         let case1 = Game::new();
 
         let case2 = Game::build_with()
@@ -112,6 +112,11 @@ mod test {
                         vec!['x', 'o', 'o'],
                         vec!['x', 'o', 'x']]).build();
 
+
+        let case1 = (State::None, State::calculate(&case1));
+        let case2 = (State::Win, State::calculate(&case2));
+        let case3 = (State::Lose, State::calculate(&case3));
+        let case4 = (State::Draw, State::calculate(&case4));
 
         return vec![case1, case2, case3, case4];
     }
