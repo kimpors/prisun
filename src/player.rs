@@ -32,7 +32,7 @@ fn move_player(game: &mut Game) -> Result<(), &'static str> {
         Err(_) => return Err("Enter valid input."),
     };
 
-    if !(1..size * size).contains(&index) {
+    if !(1..=size * size).contains(&index) {
         return Err("Argument don't in range.");
     }
 
