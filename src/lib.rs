@@ -2,7 +2,7 @@ pub mod state;
 pub mod render;
 pub mod player;
 
-use render::RenderMode;
+use render::Mode;
 use state::State;
 
 pub struct Build {
@@ -24,7 +24,7 @@ impl Build {
 pub struct Game {
     size: u8,
     field: Vec<Vec<char>>,
-    render: RenderMode,
+    render: Mode,
     state: State,
 }
 
@@ -34,7 +34,7 @@ impl Game {
         Self {
             size: 3,
             state: State::None,
-            render: RenderMode::Terminal,
+            render: Mode::Terminal,
             field: vec![vec!['1', '2', '3'],
                         vec!['4', '5', '6'],
                         vec!['7', '8', '9']],
@@ -77,6 +77,6 @@ impl Game {
     }
 
     pub fn draw(&self) {
-        self.render.draw(&self.state, &self.field);
+        self.render.draw(self);
     }
 }

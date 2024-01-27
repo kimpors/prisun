@@ -1,12 +1,12 @@
 use prisun::Game;
-use prisun::player::PlayerType;
+use prisun::player::Type;
 use prisun::state::State;
 
 fn main() {
     let mut game = Game::new();
 
-    let hero = PlayerType::Player;
-    let enemy = PlayerType::Bot;
+    let hero = Type::Player;
+    let enemy = Type::Bot;
 
     loop {
         game.draw();

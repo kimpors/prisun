@@ -1,16 +1,16 @@
 use std::io::{self, Write};
 use crate::{state::State, Game};
 
-pub enum PlayerType {
+pub enum Type {
     Player,
     Bot,
 }
 
-impl PlayerType {
+impl Type {
     pub fn r#move(&self, game: &mut Game) -> Result<(), &'static str> {
         match self {
-            PlayerType::Player => move_player(game),
-            PlayerType::Bot => move_bot(game),
+            Type::Player => move_player(game),
+            Type::Bot => move_bot(game),
         }
     }
 }
