@@ -5,6 +5,22 @@ pub mod player;
 use render::RenderMode;
 use state::State;
 
+pub struct Build {
+    game: Game,
+}
+
+impl Build {
+    pub fn field(mut self, field: Vec<Vec<char>>) -> Build {
+        self.game.field = field;
+
+        return self;
+    }
+
+    pub fn build(self) -> Game {
+        return self.game;
+    }
+}
+
 pub struct Game {
     size: u8,
     field: Vec<Vec<char>>,
@@ -23,6 +39,10 @@ impl Game {
                         vec!['4', '5', '6'],
                         vec!['7', '8', '9']],
         }
+    }
+
+    pub fn build_with() -> Build {
+        return Build { game: Game::new() };
     }
 
     pub fn get(&self, y: usize, x: usize) -> Option<&char> {

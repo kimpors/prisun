@@ -62,10 +62,9 @@ fn move_bot(game: &mut Game) -> Result<(), &'static str> {
     match game.set(1, 1) {
         Some(value) =>{ 
             if value.is_numeric() {
-                *value = 'c';
+                *value = 'o';
+                return Ok(());
             }
-
-            return Ok(());
         },
 
         None => (),
@@ -80,9 +79,7 @@ fn move_bot(game: &mut Game) -> Result<(), &'static str> {
                 game.field[y][x] = 'o';
 
                 if let State::Lose = game.check_win() {
-                    game.field[y][x] = other;
                     wins.push((y, x));
-                    continue;
                 }
 
                 game.field[y][x] = other;
@@ -96,16 +93,24 @@ fn move_bot(game: &mut Game) -> Result<(), &'static str> {
         match game.set(w.0, w.1) {
             Some(value) => {
                 *value = 'o';
+                return Ok(());
             },
+
             None => return Err("Error, while changing ceil."),
         }
     }
 
-    for row in &mut game.field {
-        for col in row {
-            if col.is_numeric() {
-                *col = 'o';
-                return Ok(());
+    for y in 0..size {
+        for x in 0..size {
+            match game.set(y, x) {
+                Some(value) => {
+                    if value.is_numeric() {
+                        *value = 'o';
+                        return Ok(());
+                    }
+
+                },
+                None => (),
             }
         }
     }

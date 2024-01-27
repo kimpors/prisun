@@ -11,7 +11,7 @@ pub enum State {
 }
 
 impl State {
-    pub fn calculate(game: &mut Game) -> State {
+    pub fn calculate(game: &Game) -> State {
         let win = vec!['x', 'x', 'x'];
         let lose = vec!['o', 'o', 'o'];
 
@@ -76,9 +76,12 @@ mod test {
 
     #[test]
     fn game_state() {
-        let mut case1 = Game::new();
+        let cases = cases();
 
-        assert!(State::calculate(&mut case1) == State::None);
+        assert!(State::calculate(&cases[0]) == State::None);
+        assert!(State::calculate(&cases[1]) == State::Win);
+        assert!(State::calculate(&cases[2]) == State::Lose);
+        assert!(State::calculate(&cases[3]) == State::Draw);
     }
 
     #[test]
@@ -87,5 +90,29 @@ mod test {
         assert_eq!(State::Lose.to_string(), "Lose");
         assert_eq!(State::Draw.to_string(), "Draw");
         assert_eq!(State::None.to_string(), "");
+    }
+
+    fn cases() -> Vec<Game> {
+        let case1 = Game::new();
+
+        let case2 = Game::build_with()
+            .field(vec![vec!['x', 'x', 'x'],
+                        vec!['3', '4', '5'],
+                        vec!['6', '7', '8']]).build();
+
+
+        let case3 = Game::build_with()
+            .field(vec![vec!['o', 'o', 'o'],
+                        vec!['3', '4', '5'],
+                        vec!['6', '7', '8']]).build();
+
+
+        let case4 = Game::build_with()
+            .field(vec![vec!['o', 'x', 'x'],
+                        vec!['x', 'o', 'o'],
+                        vec!['x', 'o', 'x']]).build();
+
+
+        return vec![case1, case2, case3, case4];
     }
 }
