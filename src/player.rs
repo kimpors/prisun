@@ -117,3 +117,12 @@ fn move_bot(game: &mut Game) -> Result<(), &'static str> {
 
     return Err("Error, can't find any possible move.");
 }
+
+
+#[cfg(test)]
+mod test {
+    #[test]
+    fn bot_move() {
+        assert!(true);
+    }
+}

@@ -2,7 +2,7 @@ use std::fmt;
 
 use crate::Game;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub enum State {
     Win,
     Lose,
@@ -78,10 +78,10 @@ mod test {
     fn game_state() {
         let cases = cases();
 
-        assert!(State::calculate(&cases[0]) == State::None);
-        assert!(State::calculate(&cases[1]) == State::Win);
-        assert!(State::calculate(&cases[2]) == State::Lose);
-        assert!(State::calculate(&cases[3]) == State::Draw);
+        assert_eq!(State::None, State::calculate(&cases[0]));
+        assert_eq!(State::Win, State::calculate(&cases[1]));
+        assert_eq!(State::Lose, State::calculate(&cases[2]));
+        assert_eq!(State::Draw, State::calculate(&cases[3]));
     }
 
     #[test]
