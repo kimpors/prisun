@@ -2,6 +2,7 @@ use std::fmt;
 
 use crate::Game;
 
+#[derive(PartialEq)]
 pub enum State {
     Win,
     Lose,
@@ -10,7 +11,7 @@ pub enum State {
 }
 
 impl State {
-    pub fn calculate(game: &mut Game) -> Self {
+    pub fn calculate(game: &mut Game) -> State {
         let win = vec!['x', 'x', 'x'];
         let lose = vec!['o', 'o', 'o'];
 
@@ -66,5 +67,25 @@ impl fmt::Display for State {
             State::Draw => write!(f, "Draw"),
             State::None => write!(f, ""),
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn game_state() {
+        let mut case1 = Game::new();
+
+        assert!(State::calculate(&mut case1) == State::None);
+    }
+
+    #[test]
+    fn display_output() {
+        assert_eq!(State::Win.to_string(), "Win");
+        assert_eq!(State::Lose.to_string(), "Lose");
+        assert_eq!(State::Draw.to_string(), "Draw");
+        assert_eq!(State::None.to_string(), "");
     }
 }

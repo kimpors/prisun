@@ -1,5 +1,4 @@
 use std::io::{self, Write};
-
 use crate::{state::State, Game};
 
 pub enum PlayerType {
@@ -33,8 +32,7 @@ fn move_player(game: &mut Game) -> Result<(), &'static str> {
         Err(_) => return Err("Enter valid input."),
     };
 
-
-    if index < 1 || index > size * size {
+    if !(1..size * size).contains(&index) {
         return Err("Argument don't in range.");
     }
 
@@ -46,22 +44,32 @@ fn move_player(game: &mut Game) -> Result<(), &'static str> {
         row += 1;
     }
 
-    if game.field[row][col - 1].is_numeric() {
-        game.field[row][col - 1] = 'x';
-    } else {
-        return Err("Already filled ceil.");
-    }
+    match game.set(row, col - 1) {
+        Some(value) => {
+            if value.is_numeric() {
+                *value = 'x';
+            }
 
-    return Ok(());
+            return Ok(());
+        },
+        None => return Err("Error while changing ceil."),
+    }
 }
 
 fn move_bot(game: &mut Game) -> Result<(), &'static str> {
     let size = game.size as usize;
 
-    if game.field[1][1].is_numeric() {
-        game.field[1][1] = 'o';
-        return Ok(());
-    }
+    match game.set(1, 1) {
+        Some(value) =>{ 
+            if value.is_numeric() {
+                *value = 'c';
+            }
+
+            return Ok(());
+        },
+
+        None => (),
+    };
 
     let mut wins = Vec::new();
 
@@ -83,20 +91,24 @@ fn move_bot(game: &mut Game) -> Result<(), &'static str> {
     }
 
     if !wins.is_empty() {
-
         let w = wins[0];
-        game.field[w.0][w.1] = 'o';
-        return Ok(());
+
+        match game.set(w.0, w.1) {
+            Some(value) => {
+                *value = 'o';
+            },
+            None => return Err("Error, while changing ceil."),
+        }
     }
 
-    for y in 0..size {
-        for x in 0..size {
-            if game.field[y][x].is_numeric() {
-                game.field[y][x] = 'o';
+    for row in &mut game.field {
+        for col in row {
+            if col.is_numeric() {
+                *col = 'o';
                 return Ok(());
             }
         }
     }
 
-    return Err("Your opponent can't find a possible move.");
+    return Err("Error, can't find any possible move.");
 }

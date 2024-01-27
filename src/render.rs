@@ -16,7 +16,8 @@ impl RenderMode {
 
 
 fn draw_terminal(state: &State, field: &Vec<Vec<char>>) {
-    let offset = offset_terminal();
+    let offset = terminal_size().unwrap();
+    let offset = (offset.0 / 16, offset.1 / 2);
 
     let pos = termion::cursor::Goto(1, offset.1);
     let clear = termion::clear::All;
@@ -52,10 +53,4 @@ fn draw_terminal(state: &State, field: &Vec<Vec<char>>) {
         }
 
         print!("{}", color::Fg(color::Red));
-
-}
-
-fn offset_terminal() -> (u16, u16) {
-    let size = terminal_size().unwrap();
-    return (size.0 / 16, size.1 / 2);
 }

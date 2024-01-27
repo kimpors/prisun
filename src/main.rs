@@ -8,7 +8,6 @@ fn main() {
     let hero = PlayerType::Player;
     let enemy = PlayerType::Bot;
 
-
     loop {
         game.draw();
 
