@@ -8,6 +8,10 @@ impl Bot {
     pub fn new() -> Self {
         Self {}
     }
+
+    fn calculate(game: &mut Game) {
+
+    }
 }
 
 impl Play for Bot {
@@ -28,13 +32,15 @@ impl Play for Bot {
         let mut wins = Vec::new();
         let mut nones = Vec::new();
 
+        Bot::calculate(game);
+
         for y in 0..size {
             for x in 0..size {
                 if game.field[y][x].is_numeric() {
                     let other = game.field[y][x];
                     game.field[y][x] = 'o';
 
-                    match game.check_win() {
+                    match State::calculate(&game) {
                         State::Lose => wins.push((y, x)),
                         State::None => nones.push((y, x)),
                         _ => (),

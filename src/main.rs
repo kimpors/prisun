@@ -1,24 +1,27 @@
+use prisun::draw::{Draw, Text};
 use prisun::Game;
 use prisun::play::{Bot, Play, Player};
 use prisun::state::State;
 
 fn main() {
     let mut game = Game::new();
+    let render = Text::new();
 
     let hero = Player::new();
     let enemy = Bot::new();
 
-    loop {
-        game.draw();
+
+    let state = loop {
+        render.draw(&game, &State::None);
 
         match hero.make_move(&mut game) {
             Ok(_) => (),
             Err(_) => continue,
         }
 
-        match game.check_win() {
+        match State::calculate(&game) {
             State::None => (),
-            _ => break,
+            other => break other,
         }
 
         match enemy.make_move(&mut game) {
@@ -26,11 +29,11 @@ fn main() {
             Err(_) => continue,
         }
 
-        match game.check_win() {
+        match State::calculate(&game) {
             State::None => (),
-            _ => break,
+            other => break other,
         }
     };
 
-    game.draw();
+    render.draw(&game, &state);
 }

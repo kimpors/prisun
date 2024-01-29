@@ -1,11 +1,9 @@
 pub mod state;
-pub mod render;
 pub mod play;
+pub mod draw;
 
 use std::fmt::Display;
 
-use render::Mode;
-use state::State;
 
 pub struct Build {
     game: Game,
@@ -26,8 +24,6 @@ impl Build {
 pub struct Game {
     size: u8,
     field: Vec<Vec<char>>,
-    render: Mode,
-    state: State,
 }
 
 
@@ -35,8 +31,6 @@ impl Game {
     pub fn new() -> Self {
         Self {
             size: 3,
-            state: State::None,
-            render: Mode::Terminal,
             field: vec![vec!['1', '2', '3'],
                         vec!['4', '5', '6'],
                         vec!['7', '8', '9']],
@@ -71,15 +65,6 @@ impl Game {
         }
 
         return Some(&mut self.field[y][x]);
-    }
-
-    pub fn check_win(&mut self) -> &State {
-        self.state = State::calculate(self);
-        return &self.state;
-    }
-
-    pub fn draw(&self) {
-        self.render.draw(self);
     }
 }
 
