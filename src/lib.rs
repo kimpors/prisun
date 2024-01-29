@@ -1,6 +1,6 @@
 pub mod state;
 pub mod render;
-pub mod player;
+pub mod play;
 
 use std::fmt::Display;
 

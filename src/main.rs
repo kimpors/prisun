@@ -1,27 +1,27 @@
 use prisun::Game;
-use prisun::player::Type;
+use prisun::play::{Bot, Play, Player};
 use prisun::state::State;
 
 fn main() {
     let mut game = Game::new();
 
-    let hero = Type::Player;
-    let enemy = Type::Bot;
+    let hero = Player::new();
+    let enemy = Bot::new();
 
     loop {
         game.draw();
 
-        match hero.r#move(&mut game) {
-            Ok(_) => (), 
+        match hero.make_move(&mut game) {
+            Ok(_) => (),
             Err(_) => continue,
-        };
+        }
 
         match game.check_win() {
             State::None => (),
             _ => break,
         }
 
-        match enemy.r#move(&mut game) {
+        match enemy.make_move(&mut game) {
             Ok(_) => (),
             Err(_) => continue,
         }
