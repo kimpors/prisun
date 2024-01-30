@@ -12,7 +12,7 @@ impl Player {
 
 impl Play for Player {
     fn make_move(&self, game: &mut crate::Game) -> Result<(), &'static str> {
-        let size = game.size as usize;
+        let size = game.size;
         let mut buf = String::new();
 
         print!("\nEnter free ceil: ");

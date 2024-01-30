@@ -25,7 +25,7 @@ impl State {
         }
 
         // Horizontal Pattern
-        for i in 0..game.size as usize {
+        for i in 0..game.size {
             let horizontal: &[char] = &[game.field[0][i], game.field[1][i], game.field[2][i]];
 
             if horizontal == win {

@@ -22,7 +22,7 @@ impl Build {
 }
 
 pub struct Game {
-    size: u8,
+    size: usize,
     field: Vec<Vec<char>>,
 }
 
@@ -65,6 +65,15 @@ impl Game {
         }
 
         return Some(&mut self.field[y][x]);
+    }
+}
+
+impl Clone for Game {
+    fn clone(&self) -> Self {
+        Self {
+            field: self.field.clone(),
+            size: self.size,
+        }
     }
 }
 
