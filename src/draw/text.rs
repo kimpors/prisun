@@ -14,7 +14,16 @@ impl Text {
 impl Draw for Text {
     fn draw(&self, game: &Game, state: &State) {
         let offset = terminal_size().unwrap();
-        let offset = (offset.0 / 16, offset.1 / 2);
+
+        let size = match game.to_string().split('\n')
+                    .max_by_key(|a| a.len()) {
+            Some(value) => value.len(),
+            None => 0,
+        };
+
+
+        let offset = ((offset.0 / 7 - size as u16 / 2) / 2, offset.1 / 3);
+
 
         let pos = termion::cursor::Goto(1, offset.1);
         let clear = termion::clear::All;
@@ -26,16 +35,15 @@ impl Draw for Text {
             State::None => (),
             other => {
                 print!("{}", color::Fg(color::Yellow));
-                println!("{}{}{}", "\t".repeat(offset.0 as usize),  " ".repeat(8 - other.to_string().len()), other);
+                println!("{}{}{}", "\t".repeat(offset.0 as usize),  "\t".repeat(8 - other.to_string().len()), other);
                 println!("{}", color::Fg(color::Reset));
             } 
         }
 
         print!("{}", color::Fg(color::Blue));
 
-
         // Main Field
-        for row in game.to_string().split('\n') {
+        for row in game.to_string().lines() {
             println!("{}{row}", "\t".repeat(offset.0 as usize));
         }
 

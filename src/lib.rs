@@ -2,7 +2,7 @@ pub mod state;
 pub mod play;
 pub mod draw;
 
-use std::fmt::Display;
+use std::{fmt::Display, result};
 
 
 pub struct Build {
@@ -41,6 +41,8 @@ impl Game {
         return Build { game: Game::new() };
     }
 
+    pub fn len(&self) -> usize { self.size * self.size }
+
     pub fn get(&self, y: usize, x: usize) -> Option<&char> {
         let row = match self.field.get(y) {
             Some(value) => value,
@@ -66,6 +68,36 @@ impl Game {
 
         return Some(&mut self.field[y][x]);
     }
+
+    pub fn expand(&mut self) {
+        self.size += 1;
+
+        let mut temp = Vec::new();
+
+        for _ in 0..self.size {
+            temp.push('0');
+        }
+
+        for row in &mut self.field {
+            row.push('0');
+        }
+
+        self.field.push(temp);
+        self.refresh();
+    }
+
+    fn refresh(&mut self) {
+        let _ = self.field.iter_mut()
+            .flatten().enumerate()
+            .map(|(i, a)| {
+                if a.is_numeric() {
+                    match char::from_digit(i as u32, 10) {
+                        Some(value) => *a = value,
+                        None => (),
+                    };
+                }
+            });
+    }
 }
 
 impl Clone for Game {
@@ -79,18 +111,22 @@ impl Clone for Game {
 
 impl Display for Game {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let mut count: u8 = 1;
         let mut result = String::new();
 
         for row in &self.field {
-            for (i, col) in row.iter().enumerate() {
-                if i == row.len() - 1 {
-                    result.push_str(&format!(" {col} "));
+            for col in row {
+                if col.is_numeric() {
+                    result.push_str(&format!("{count}\t"));
                 } else {
-                    result.push_str(&format!(" {col} | "));
+                    result.push_str(&format!("{col}\t"));
                 }
+
+                count += 1;
             }
 
-            result.push_str(&format!("\n{}\n", "-".repeat(13)));
+            // result.push('\n');
+            result.push_str("\n\n");
         }
 
         return write!(f, "{result}");

@@ -14,6 +14,10 @@ fn main() {
     let state = loop {
         render.draw(&game, &State::None);
 
+        if game.len() < 100 {
+            game.expand();
+        }
+
         match hero.make_move(&mut game) {
             Ok(_) => (),
             Err(_) => continue,
