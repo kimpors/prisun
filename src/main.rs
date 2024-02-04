@@ -19,7 +19,7 @@ fn main() {
             Err(_) => continue,
         }
 
-        match State::calculate(&game) {
+        match State::calculate(&mut game) {
             State::None => (),
             other => {
                 if game.len() < 100 {
@@ -35,7 +35,7 @@ fn main() {
             Err(_) => continue,
         }
 
-        match State::calculate(&game) {
+        match State::calculate(&mut game) {
             State::None => (),
             other => {
                 if game.len() < 100 {

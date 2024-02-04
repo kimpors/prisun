@@ -26,30 +26,32 @@ impl Play for Bot {
             None => (),
         };
 
+        let mut temp = game.clone();
+
         let mut wins = Vec::new();
         let mut defends = Vec::new();
         let mut nones = Vec::new();
 
         for y in 0..len {
             for x in 0..len {
-                if game.field[y][x].is_numeric() {
-                    let other = game.field[y][x];
-                    game.field[y][x] = 'o';
+                if temp.field[y][x].is_numeric() {
+                    let other = temp.field[y][x];
+                    temp.field[y][x] = 'o';
 
-                    match State::calculate(&game) {
+                    match State::calculate(&mut temp) {
                         State::Lose => wins.push((y, x)),
                         State::None => nones.push((y, x)),
                         _ => (),
                     }
 
-                    game.field[y][x] = 'x';
+                    temp.field[y][x] = 'x';
 
-                    match State::calculate(&game) {
+                    match State::calculate(&mut temp) {
                         State::Win => defends.push((y, x)),
                         _ => (),
                     }
 
-                    game.field[y][x] = other;
+                    temp.field[y][x] = other;
                 }
             }
         }

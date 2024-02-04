@@ -11,52 +11,131 @@ pub enum State {
 }
 
 impl State {
-    pub fn calculate(game: &Game) -> State {
+    pub fn calculate(game: &mut Game) -> State {
         let win = vec!['x', 'x', 'x'];
         let lose = vec!['o', 'o', 'o'];
+        let none = vec!['-', '/', '|', '\\'];
 
-        // Vertical Pattern
-        for row in &game.field {
-            if *row == win {
-                return State::Win;
-            } else if *row == lose {
-                return State::Lose;
-            }
-        }
+        let mut vert = false;
+        let mut horz = false;
 
-        // Horizontal Pattern
-        for i in 0..game.size {
-            let horizontal: &[char] = &[game.field[0][i], game.field[1][i], game.field[2][i]];
+        let field = &game.field;
+        let len = game.row_len();
 
-            if horizontal == win {
-                return State::Win;
-            } else if horizontal == lose {
-                return State::Lose;
-            }
-        }
+        for i in 0..len {
+            for j in 0..len {
+                if none.contains(&field[i][j]) {
+                    continue;
+                }
 
-        // Diagonal Pattern
-        for i in 0..2 {
-            let diagonal: &[char] = &[game.field[0][i * 2], game.field[1][1], game.field[2][2 - i * 2]];
+                if !field[i][j].is_numeric() {
+                    if j + 2 < len {
+                        vert = true;
+                        let pattern = vec![field[i][j], field[i][j + 1], field[i][j + 2]];
 
-            if diagonal == win {
-                return State::Win;
-            } else if diagonal == lose {
-                return State::Lose;
-            }
-        }
+                        if pattern == win {
+                            game.field[i][j] = '-';
+                            game.field[i][j + 1] = '-';
+                            game.field[i][j + 2] = '-';
 
-        // Check For A Draw
-        for row in &game.field {
-            for ceil in row {
-                if ceil.is_numeric() {
-                    return State::None;
+
+                            return State::Win;
+                        } else if pattern == lose {
+                            game.field[i][j] = '-';
+                            game.field[i][j + 1] = '-';
+                            game.field[i][j + 2] = '-';
+
+
+                            return State::Lose;
+                        } 
+                    } 
+
+                    if i + 2 < len {
+                        horz = true;
+                        let pattern = vec![field[i][j], field[i + 1][j], field[i + 2][j]];
+
+                        if pattern == win {
+                            game.field[i][j] = '|';
+                            game.field[i + 1][j] = '|';
+                            game.field[i + 2][j] = '|';
+
+
+                            return State::Win;
+                        } else if pattern == lose {
+                            game.field[i][j] = '|';
+                            game.field[i + 1][j] = '|';
+                            game.field[i + 2][j] = '|';
+
+
+                            return State::Lose;
+                        } 
+                    }
+
+                    if vert && horz {
+                        let pattern = vec![field[i][j], field[i + 1][j + 1], field[i + 2][j + 2]];
+
+                        if pattern == win {
+                            game.field[i][j] = '\\';
+                            game.field[i + 1][j + 1] = '\\';
+                            game.field[i + 2][j + 2] = '\\';
+                            
+
+                            return State::Win;
+                        } else if pattern == lose {
+                            game.field[i][j] = '\\';
+                            game.field[i + 1][j + 1] = '\\';
+                            game.field[i + 2][j + 2] = '\\';
+
+
+                            return State::Lose;
+                        } 
+                    }
+
+                    if horz && j >= 2 {
+                        let pattern = vec![field[i][j], field[i + 1][j - 1], field[i + 2][j - 2]];
+
+                        if pattern == win {
+                            game.field[i][j] = '/';
+                            game.field[i + 1][j - 1] = '/';
+                            game.field[i + 2][j - 2] = '/';
+
+
+                            return State::Win;
+                        } else if pattern == lose {
+                            game.field[i][j] = '/';
+                            game.field[i + 1][j - 1] = '/';
+                            game.field[i + 2][j - 2] = '/';
+
+
+                            return State::Lose;
+                        } 
+                    }
+
+                    vert = false; 
+                    horz = false;
                 }
             }
         }
 
-        return State::Draw;
+        return if is_draw(game) {
+            State::Draw
+        } else {
+            State::None
+        };
     }
+}
+
+fn is_draw(game: &Game) -> bool
+{
+    for row in &game.field {
+        for ceil in row {
+            if ceil.is_numeric() {
+                return false;
+            }
+        }
+    }
+
+    return true;
 }
 
 impl fmt::Display for State {
