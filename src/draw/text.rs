@@ -43,8 +43,21 @@ impl Draw for Text {
         print!("{}", color::Fg(color::Blue));
 
         // Main Field
+        let mut is_first = true;
         for row in game.to_string().lines() {
-            println!("{}{row}", "\t".repeat(offset.0 as usize));
+            print!("{}", "\t".repeat(offset.0 as usize));
+
+            for col in row.split_whitespace() {
+                if is_first {
+                    print!("|{}{col}    |", " ".repeat(5 - col.len()));
+                    is_first = false;
+                } else {
+                    print!("{}{col}    |", " ".repeat(5 - col.len()));
+                }
+            }
+
+            is_first = true;
+            println!("\n{}{}", "\t".repeat(offset.0 as usize), "-".repeat(game.row_len() * 11 - game.row_len() + 1));
         }
 
         print!("{}", color::Fg(color::Red));

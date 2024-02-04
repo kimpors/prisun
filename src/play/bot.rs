@@ -13,9 +13,9 @@ impl Bot {
 
 impl Play for Bot {
     fn make_move(&self, game: &mut Game) -> Result<(), &'static str> {
-        let size = game.size;
+        let len = game.row_len();
 
-        match game.set(size / 2, size / 2) {
+        match game.set(len / 2, len / 2) {
             Some(value) => { 
                 if value.is_numeric() {
                     *value = 'o';
@@ -30,8 +30,8 @@ impl Play for Bot {
         let mut defends = Vec::new();
         let mut nones = Vec::new();
 
-        for y in 0..size {
-            for x in 0..size {
+        for y in 0..len {
+            for x in 0..len {
                 if game.field[y][x].is_numeric() {
                     let other = game.field[y][x];
                     game.field[y][x] = 'o';

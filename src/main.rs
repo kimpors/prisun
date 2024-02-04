@@ -14,10 +14,6 @@ fn main() {
     let state = loop {
         render.draw(&game, &State::None);
 
-        if game.len() < 100 {
-            game.expand();
-        }
-
         match hero.make_move(&mut game) {
             Ok(_) => (),
             Err(_) => continue,
@@ -25,7 +21,13 @@ fn main() {
 
         match State::calculate(&game) {
             State::None => (),
-            other => break other,
+            other => {
+                if game.len() < 100 {
+                    game.expand()
+                } else {
+                    break other;
+                }
+            },
         }
 
         match enemy.make_move(&mut game) {
@@ -35,7 +37,13 @@ fn main() {
 
         match State::calculate(&game) {
             State::None => (),
-            other => break other,
+            other => {
+                if game.len() < 100 {
+                    game.expand()
+                } else {
+                    break other;
+                }
+            },
         }
     };
 

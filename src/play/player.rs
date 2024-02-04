@@ -12,7 +12,6 @@ impl Player {
 
 impl Play for Player {
     fn make_move(&self, game: &mut crate::Game) -> Result<(), &'static str> {
-        let size = game.size;
         let mut buf = String::new();
 
         print!("\nEnter free ceil: ");
@@ -27,15 +26,15 @@ impl Play for Player {
             Err(_) => return Err("Enter valid input."),
         };
 
-        if !(1..=size * size).contains(&index) {
+        if !(1..=game.len()).contains(&index) {
             return Err("Argument don't in range.");
         }
 
         let mut row = 0;
         let mut col = index;
 
-        while col > 3 {
-            col -= 3;
+        while col > game.row_len() {
+            col -= game.row_len();
             row += 1;
         }
 

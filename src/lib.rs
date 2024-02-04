@@ -41,6 +41,7 @@ impl Game {
         return Build { game: Game::new() };
     }
 
+    pub fn row_len(&self) -> usize { self.size }
     pub fn len(&self) -> usize { self.size * self.size }
 
     pub fn get(&self, y: usize, x: usize) -> Option<&char> {
@@ -125,8 +126,8 @@ impl Display for Game {
                 count += 1;
             }
 
-            // result.push('\n');
-            result.push_str("\n\n");
+            result.push('\n');
+            // result.push_str("\n\n");
         }
 
         return write!(f, "{result}");
