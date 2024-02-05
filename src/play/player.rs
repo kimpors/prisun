@@ -42,9 +42,10 @@ impl Play for Player {
             Some(value) => {
                 if value.is_numeric() {
                     *value = 'x';
+                    return Ok(());
+                } else {
+                    return Err("Error ceil already filled.")
                 }
-
-                return Ok(());
             },
             None => return Err("Error while changing ceil."),
         }

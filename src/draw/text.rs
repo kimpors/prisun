@@ -49,17 +49,28 @@ impl Draw for Text {
 
             for col in row.split_whitespace() {
                 if is_first {
-                    print!("|{}{col}    |", " ".repeat(5 - col.len()));
+                    match col {
+                        "x" => print!("|{}{}{col}{}  |", " ".repeat(3 - col.len()), color::Fg(color::Green), color::Fg(color::Blue)),
+                        "o" => print!("|{}{}{col}{}  |", " ".repeat(3 - col.len()), color::Fg(color::Red), color::Fg(color::Blue)),
+                        "/" | "|" | "\\" | "-" => print!("|{}{}{col}{}  |", " ".repeat(3 - col.len()), color::Fg(color::Black), color::Fg(color::Blue)),
+                        _ => print!("|{}{col}  |", " ".repeat(3 - col.len())),
+                    }
+
                     is_first = false;
                 } else {
-                    print!("{}{col}    |", " ".repeat(5 - col.len()));
+                    match col {
+                        "x" => print!("{}{}{col}{}  |", " ".repeat(3 - col.len()), color::Fg(color::Green), color::Fg(color::Blue)),
+                        "o" => print!("{}{}{col}{}  |", " ".repeat(3 - col.len()), color::Fg(color::Red), color::Fg(color::Blue)),
+                        "/" | "|" | "\\" | "-" => print!("{}{}{col}{}  |", " ".repeat(3 - col.len()), color::Fg(color::Black), color::Fg(color::Blue)),
+                        _ => print!("{}{col}  |", " ".repeat(3 - col.len())),
+                    }
                 }
             }
 
             is_first = true;
-            println!("\n{}{}", "\t".repeat(offset.0 as usize), "-".repeat(game.row_len() * 11 - game.row_len() + 1));
+            println!("\n{}{}", "\t".repeat(offset.0 as usize), "-".repeat(game.row_len() * 7 - game.row_len() + 1));
         }
 
-        print!("{}", color::Fg(color::Red));
+        print!("{}", color::Fg(color::Magenta));
     }
 }

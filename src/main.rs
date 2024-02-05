@@ -20,14 +20,15 @@ fn main() {
         }
 
         match State::calculate(&mut game) {
-            State::None => (),
-            other => {
+            State::Draw => {
                 if game.len() < 100 {
-                    game.expand()
+                    game.expand();
                 } else {
-                    break other;
+                    break State::Draw;
                 }
-            },
+            }
+            other if game.len() == 100 => break other,
+            _ => ()
         }
 
         match enemy.make_move(&mut game) {
@@ -36,14 +37,15 @@ fn main() {
         }
 
         match State::calculate(&mut game) {
-            State::None => (),
-            other => {
+            State::Draw => {
                 if game.len() < 100 {
-                    game.expand()
+                    game.expand();
                 } else {
-                    break other;
+                    break State::Draw;
                 }
-            },
+            }
+            other if game.len() == 100 => break other,
+            _ => ()
         }
     };
 
