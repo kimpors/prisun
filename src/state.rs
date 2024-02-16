@@ -1,6 +1,5 @@
-use std::fmt;
-
-use crate::Game;
+use crate::field::Field;
+use std::fmt::Display;
 
 #[derive(PartialEq, Debug)]
 pub enum State {
@@ -11,135 +10,104 @@ pub enum State {
 }
 
 impl State {
-    pub fn calculate(game: &mut Game) -> State {
-        let win = vec!['x', 'x', 'x'];
-        let lose = vec!['o', 'o', 'o'];
-        let none = vec!['-', '/', '|', '\\'];
+    pub fn predict(field: &mut Field, enemy: char) -> State {
+        if let State::Win = State::check(field, enemy, false) {
+            State::Lose
+        } else {
+            State::None
+        }
+    }
 
-        let mut vert = false;
-        let mut horz = false;
 
-        let field = &game.field;
-        let len = game.row_len();
+    pub fn check(field: &mut Field, skin: char, fill_pattern: bool) -> State {
+        let size = field.get_size();
 
-        for i in 0..len {
-            for j in 0..len {
-                if none.contains(&field[i][j]) {
+        for i in 0..size {
+            for j in 0..size - 2 {
+                if field[i][j] != skin {
                     continue;
                 }
 
-                if !field[i][j].is_numeric() {
-                    if j + 2 < len {
-                        vert = true;
-                        let pattern = vec![field[i][j], field[i][j + 1], field[i][j + 2]];
-
-                        if pattern == win {
-                            game.field[i][j] = '-';
-                            game.field[i][j + 1] = '-';
-                            game.field[i][j + 2] = '-';
-
-
-                            return State::Win;
-                        } else if pattern == lose {
-                            game.field[i][j] = '-';
-                            game.field[i][j + 1] = '-';
-                            game.field[i][j + 2] = '-';
-
-
-                            return State::Lose;
-                        } 
-                    } 
-
-                    if i + 2 < len {
-                        horz = true;
-                        let pattern = vec![field[i][j], field[i + 1][j], field[i + 2][j]];
-
-                        if pattern == win {
-                            game.field[i][j] = '|';
-                            game.field[i + 1][j] = '|';
-                            game.field[i + 2][j] = '|';
-
-
-                            return State::Win;
-                        } else if pattern == lose {
-                            game.field[i][j] = '|';
-                            game.field[i + 1][j] = '|';
-                            game.field[i + 2][j] = '|';
-
-
-                            return State::Lose;
-                        } 
+                if field[i][j + 1] == skin && field[i][j + 2] == skin {
+                    if fill_pattern {
+                        field[i][j] = '-';
+                        field[i][j + 1] = '-';
+                        field[i][j + 2] = '-';
                     }
 
-                    if vert && horz {
-                        let pattern = vec![field[i][j], field[i + 1][j + 1], field[i + 2][j + 2]];
+                    return State::Win;
+                } 
+            }
+        }
 
-                        if pattern == win {
-                            game.field[i][j] = '\\';
-                            game.field[i + 1][j + 1] = '\\';
-                            game.field[i + 2][j + 2] = '\\';
-                            
+        for i in 0..size - 2 {
+            for j in 0..size{
+                if field[i][j] != skin {
+                    continue;
+                }
 
-                            return State::Win;
-                        } else if pattern == lose {
-                            game.field[i][j] = '\\';
-                            game.field[i + 1][j + 1] = '\\';
-                            game.field[i + 2][j + 2] = '\\';
-
-
-                            return State::Lose;
-                        } 
+                if field[i + 1][j] == skin && field[i + 2][j] == skin {
+                    if fill_pattern {
+                        field[i][j] = '|';
+                        field[i + 1][j] = '|';
+                        field[i + 2][j] = '|';
                     }
 
-                    if horz && j >= 2 {
-                        let pattern = vec![field[i][j], field[i + 1][j - 1], field[i + 2][j - 2]];
+                    return State::Win;
+                } 
+            }
+        }
 
-                        if pattern == win {
-                            game.field[i][j] = '/';
-                            game.field[i + 1][j - 1] = '/';
-                            game.field[i + 2][j - 2] = '/';
+        for i in 0..size - 2 {
+            for j in 0..size - 2 {
+                if field[i][j] != skin {
+                    continue;
+                }
 
-
-                            return State::Win;
-                        } else if pattern == lose {
-                            game.field[i][j] = '/';
-                            game.field[i + 1][j - 1] = '/';
-                            game.field[i + 2][j - 2] = '/';
-
-
-                            return State::Lose;
-                        } 
+                if field[i + 1][j + 1] == skin && field[i + 2][j + 2] == skin {
+                    if fill_pattern {
+                        field[i][j] = '\\';
+                        field[i + 1][j + 1] = '\\';
+                        field[i + 2][j + 2] = '\\';
                     }
 
-                    vert = false; 
-                    horz = false;
+                    return State::Win;
                 }
             }
         }
 
-        return if is_draw(game) {
-            State::Draw
-        } else {
-            State::None
-        };
-    }
-}
+        for i in 2..size {
+            for j in 0..size - 2 {
+                if field[i][j] != skin {
+                    continue;
+                }
 
-fn is_draw(game: &Game) -> bool
-{
-    for row in &game.field {
-        for ceil in row {
-            if ceil.is_numeric() {
-                return false;
+                if field[i - 1][j + 1] == skin && field[i - 2][j + 2] == skin {
+                    if fill_pattern {
+                        field[i][j] = '/';
+                        field[i - 1][j + 1] = '/';
+                        field[i - 2][j + 2] = '/';
+                    }
+
+                    return State::Win;
+                }
             }
         }
-    }
 
-    return true;
+        for i in 0..size {
+            for j in 0..size {
+                if field[i][j].is_numeric() {
+                    return State::None;
+                }
+            }
+        }
+
+        State::Draw
+    }
 }
 
-impl fmt::Display for State {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for State {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             State::Win => write!(f, "Win"),
             State::Lose => write!(f, "Lose"),
@@ -149,54 +117,62 @@ impl fmt::Display for State {
     }
 }
 
+
 #[cfg(test)]
 mod test {
     use super::*;
 
     #[test]
-    fn game_state() {
-        let cases = cases();
-
-        assert_eq!(cases[0].0, cases[0].1);
-        assert_eq!(cases[1].0, cases[1].1);
-        assert_eq!(cases[2].0, cases[2].1);
-        assert_eq!(cases[3].0, cases[3].1);
-    }
-
-    #[test]
-    fn display_output() {
+    fn output() {
         assert_eq!(State::Win.to_string(), "Win");
         assert_eq!(State::Lose.to_string(), "Lose");
         assert_eq!(State::Draw.to_string(), "Draw");
         assert_eq!(State::None.to_string(), "");
     }
 
-    fn cases() -> Vec<(State, State)> {
-        let case1 = Game::new();
+    #[test]
+    fn check_logic() {
+        let mut cases = logic_cases();
 
-        let case2 = Game::build_with()
-            .field(vec![vec!['x', 'x', 'x'],
-                        vec!['3', '4', '5'],
-                        vec!['6', '7', '8']]).build();
-
-
-        let case3 = Game::build_with()
-            .field(vec![vec!['o', 'o', 'o'],
-                        vec!['3', '4', '5'],
-                        vec!['6', '7', '8']]).build();
-
-
-        let case4 = Game::build_with()
-            .field(vec![vec!['o', 'x', 'x'],
-                        vec!['x', 'o', 'o'],
-                        vec!['x', 'o', 'x']]).build();
-
-
-        let case1 = (State::None, State::calculate(&case1));
-        let case2 = (State::Win, State::calculate(&case2));
-        let case3 = (State::Lose, State::calculate(&case3));
-        let case4 = (State::Draw, State::calculate(&case4));
-
-        return vec![case1, case2, case3, case4];
+        assert_eq!(State::check(&mut cases[0], 'x', false), State::Win);
+        assert_eq!(State::check(&mut cases[1], 'x', false), State::Win);
+        assert_eq!(State::check(&mut cases[2], 'x', false), State::Win);
+        assert_eq!(State::check(&mut cases[3], 'x', false), State::Win);
     }
+
+    #[test]
+    fn predict_logic() {
+        let mut cases = logic_cases();
+
+        assert_eq!(State::predict(&mut cases[0], 'x'), State::Lose);
+        assert_eq!(State::predict(&mut cases[1], 'x'), State::Lose);
+        assert_eq!(State::predict(&mut cases[2], 'x'), State::Lose);
+        assert_eq!(State::predict(&mut cases[3], 'x'), State::Lose);
+    }
+
+
+    fn logic_cases() -> [Field; 4] {
+        let mut vert = Field::with_size(4);
+        let mut horz = Field::with_size(4);
+        let mut diag_left = Field::with_size(4);
+        let mut diag_right = Field::with_size(4);
+
+        vert[1][1] = 'x';
+        vert[1][2] = 'x';
+        vert[1][3] = 'x';
+
+        horz[1][1] = 'x';
+        horz[1][2] = 'x';
+        horz[1][3] = 'x';
+
+        diag_left[1][1] = 'x';
+        diag_left[2][2] = 'x';
+        diag_left[3][3] = 'x';
+
+        diag_right[1][3] = 'x';
+        diag_right[2][2] = 'x';
+        diag_right[3][1] = 'x';
+
+        [vert, horz, diag_left, diag_right]
+    } 
 }

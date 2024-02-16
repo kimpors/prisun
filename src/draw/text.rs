@@ -1,76 +1,59 @@
 use termion::{color, terminal_size};
-use crate::{state::State, Game};
+use crate::field::Field;
 
 use super::Draw;
 
-pub struct Text {}
-
-impl Text {
-    pub fn new() -> Self {
-        Self {}
-    }
-}
+pub struct Text;
 
 impl Draw for Text {
-    fn draw(&self, game: &Game, state: &State) {
+    fn draw(&self, field: &Field) {
         let offset = terminal_size().unwrap();
-
-        let size = match game.to_string().split('\n')
-                    .max_by_key(|a| a.len()) {
-            Some(value) => value.len(),
-            None => 0,
-        };
-
+        let size = field.get_size();
 
         let offset = ((offset.0 / 7 - size as u16 / 2) / 2, offset.1 / 3);
 
+        print!("{}{}", 
+               termion::cursor::Goto(1, offset.1), 
+               termion::clear::All);
 
-        let pos = termion::cursor::Goto(1, offset.1);
-        let clear = termion::clear::All;
 
-        println!("{clear}{pos}");
+        let red = color::Fg(color::Red);
+        let blue = color::Fg(color::Blue);
+        let black = color::Fg(color::Black);
+        let magenta = color::Fg(color::Magenta);
 
-        // Header
-        match state {
-            State::None => (),
-            other => {
-                print!("{}", color::Fg(color::Yellow));
-                println!("{}{}{}", "\t".repeat(offset.0 as usize),  "\t".repeat(8 - other.to_string().len()), other);
-                println!("{}", color::Fg(color::Reset));
-            } 
-        }
 
-        print!("{}", color::Fg(color::Blue));
+        print!("{blue}");
+        let margin = "\t".repeat(offset.0 as usize);
+        let line = "-".repeat(field.get_size() * 7 - field.get_size() + 1);
 
-        // Main Field
-        let mut is_first = true;
-        for row in game.to_string().lines() {
-            print!("{}", "\t".repeat(offset.0 as usize));
+        let mut count = 1;
 
-            for col in row.split_whitespace() {
-                if is_first {
-                    match col {
-                        "x" => print!("|{}{}{col}{}  |", " ".repeat(3 - col.len()), color::Fg(color::Green), color::Fg(color::Blue)),
-                        "o" => print!("|{}{}{col}{}  |", " ".repeat(3 - col.len()), color::Fg(color::Red), color::Fg(color::Blue)),
-                        "/" | "|" | "\\" | "-" => print!("|{}{}{col}{}  |", " ".repeat(3 - col.len()), color::Fg(color::Black), color::Fg(color::Blue)),
-                        _ => print!("|{}{col}  |", " ".repeat(3 - col.len())),
-                    }
+        for row in field.iter() {
+            print!("{margin}|");
 
-                    is_first = false;
+            for col in row {
+                let (left, right) = if count > 99 {
+                    (" ", " ")
+                } else if count > 9 {
+                    ("  ", " ")
                 } else {
-                    match col {
-                        "x" => print!("{}{}{col}{}  |", " ".repeat(3 - col.len()), color::Fg(color::Green), color::Fg(color::Blue)),
-                        "o" => print!("{}{}{col}{}  |", " ".repeat(3 - col.len()), color::Fg(color::Red), color::Fg(color::Blue)),
-                        "/" | "|" | "\\" | "-" => print!("{}{}{col}{}  |", " ".repeat(3 - col.len()), color::Fg(color::Black), color::Fg(color::Blue)),
-                        _ => print!("{}{col}  |", " ".repeat(3 - col.len())),
-                    }
+                    ("  ", "  ")
+                };
+
+                match col {
+                    '/' | '|' | '\\' | '-' => print!("  {black}{col}{blue}  "),
+                    _ if col.is_numeric() => print!("{left}{count}{right}"),
+                    _ => print!("  {red}{col}{blue}  "),
                 }
+
+                print!("|");
+                count += 1;
             }
 
-            is_first = true;
-            println!("\n{}{}", "\t".repeat(offset.0 as usize), "-".repeat(game.row_len() * 7 - game.row_len() + 1));
+            println!("\n{margin}{line}");
         }
 
-        print!("{}", color::Fg(color::Magenta));
+        print!("{magenta}");
     }
 }

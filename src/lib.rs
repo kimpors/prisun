@@ -1,191 +1,73 @@
 pub mod state;
 pub mod play;
 pub mod draw;
+pub mod field;
 
-use std::{fmt::Display, result};
+use draw::{Draw, Text};
+use field::Field;
+use play::{Bot, Human, Player};
+use state::State;
 
-
-pub struct Build {
-    game: Game,
+pub struct Game<'a, 'b> {
+    field: Field,
+    players: Vec<Player<'a>>,
+    render: &'b dyn Draw,
 }
 
-impl Build {
-    pub fn field(mut self, field: Vec<Vec<char>>) -> Build {
-        self.game.field = field;
-
-        return self;
-    }
-
-    pub fn build(self) -> Game {
-        return self.game;
-    }
-}
-
-pub struct Game {
-    size: usize,
-    field: Vec<Vec<char>>,
-}
-
-
-impl Game {
+impl Game<'_, '_> {
     pub fn new() -> Self {
         Self {
-            size: 3,
-            field: vec![vec!['1', '2', '3'],
-                        vec!['4', '5', '6'],
-                        vec!['7', '8', '9']],
+            field: Field::new(),
+            players: vec![
+                Player::new(&Human, 'x'),
+                Player::new(&Bot, 'o'),
+            ],
+            render: &Text,
         }
     }
 
-    pub fn build_with() -> Build {
-        return Build { game: Game::new() };
-    }
-
-    pub fn row_len(&self) -> usize { self.size }
-    pub fn len(&self) -> usize { self.size * self.size }
-
-    pub fn get(&self, y: usize, x: usize) -> Option<&char> {
-        let row = match self.field.get(y) {
-            Some(value) => value,
-            None => return None,
-        };
-
-        match row.get(x) {
-            Some(value) => return Some(value),
-            None => return None,
-        }
-    }
-
-    pub fn set(&mut self, y: usize, x: usize) -> Option<&mut char> {
-        let row = match self.field.get(y) {
-            Some(value) => value,
-            None => return None,
-        };
-
-        match row.get(x) {
-            Some(_) => (),
-            None => return None,
-        }
-
-        return Some(&mut self.field[y][x]);
-    }
-
-    pub fn expand(&mut self) {
-        self.size += 1;
-
-        let mut temp = Vec::new();
-
-        for _ in 0..self.size {
-            temp.push('0');
-        }
-
-        for row in &mut self.field {
-            row.push('0');
-        }
-
-        self.field.push(temp);
-        self.refresh();
-    }
-
-    fn refresh(&mut self) {
-        let _ = self.field.iter_mut()
-            .flatten().enumerate()
-            .map(|(i, a)| {
-                if a.is_numeric() {
-                    match char::from_digit(i as u32, 10) {
-                        Some(value) => *a = value,
-                        None => (),
-                    };
-                }
-            });
-    }
-}
-
-impl Clone for Game {
-    fn clone(&self) -> Self {
+    pub fn build(field: Field, render: &'static impl Draw, players: Vec<Player<'static>>) -> Self {
         Self {
-            field: self.field.clone(),
-            size: self.size,
+            field,
+            render,
+            players,
         }
     }
-}
 
-impl Display for Game {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        let mut count: u8 = 1;
-        let mut result = String::new();
+    pub fn play(&mut self) {
+        let field = &mut self.field;
+        let mut i = 0;
 
-        for row in &self.field {
-            for col in row {
-                if col.is_numeric() {
-                    result.push_str(&format!("{count}\t"));
-                } else {
-                    result.push_str(&format!("{col}\t"));
+        'start: loop {
+            while i < self.players.len() {
+                self.render.draw(&field);
+
+                match self.players[i].play(field) {
+                    Some(skin) => {
+                        match State::check(field, skin, true) {
+                            State::Win => self.players[i].add_score(),
+                            State::Draw => {
+                                if field.get_size() < 9 {
+                                    field.expand();
+                                    field.clear();
+                                } else {
+                                    break 'start;
+                                }
+
+                            },
+                            _ => (),
+                        }
+
+                        i += 1;
+                    },
+                    _ => (),
                 }
-
-                count += 1;
             }
 
-            result.push('\n');
-            // result.push_str("\n\n");
+            i = 0;
         }
 
-        return write!(f, "{result}");
-    }
-}
 
-
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn display_output() {
-        let cases = cases();
-
-        assert_eq!(cases[0].0, cases[0].1);
-        assert_eq!(cases[1].0, cases[1].1);
-        assert_eq!(cases[2].0, cases[2].1);
-        assert_eq!(cases[3].0, cases[3].1);
-    }
-
-    fn cases() -> Vec<(String, String)> {
-        let case1 = Game::new();
-
-        let case2 = Game::build_with()
-            .field(vec![vec!['1', 'x', '3'],
-                        vec!['4', 'x', '6'],
-                        vec!['7', 'x', '9']]).build();
-
-        let case3 = Game::build_with()
-            .field(vec![vec!['1', '2', '3'],
-                        vec!['o', 'o', 'o'],
-                        vec!['7', '8', '9']]).build();
-
-        let case4 = Game::build_with()
-            .field(vec![vec!['x', '2', 'o'],
-                        vec!['4', 'o', '6'],
-                        vec!['o', '8', 'x']]).build();
-
-        let underline = "-".repeat(13);
-
-        let case1 = (case1.to_string(), format!(" 1 |  2 |  3 \n{underline}\n \
-                                                 4 |  5 |  6 \n{underline}\n \
-                                                 7 |  8 |  9 \n{underline}\n"));
-
-        let case2 = (case2.to_string(), format!(" 1 |  x |  3 \n{underline}\n \
-                                                 4 |  x |  6 \n{underline}\n \
-                                                 7 |  x |  9 \n{underline}\n"));
-
-        let case3 = (case3.to_string(), format!(" 1 |  2 |  3 \n{underline}\n \
-                                                 o |  o |  o \n{underline}\n \
-                                                 7 |  8 |  9 \n{underline}\n"));
-
-        let case4 = (case4.to_string(), format!(" x |  2 |  o \n{underline}\n \
-                                                 4 |  o |  6 \n{underline}\n \
-                                                 o |  8 |  x \n{underline}\n"));
-
-        return vec![case1, case2, case3, case4];
+        self.render.draw(&field);
     }
 }

@@ -1,8 +1,8 @@
 pub mod text;
 
-use crate::{state::State, Game};
+use crate::field::Field;
 pub use self::text::Text;
 
 pub trait Draw {
-    fn draw(&self, game: &Game, state: &State);
+    fn draw(&self, field: &Field);
 }

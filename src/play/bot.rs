@@ -1,150 +1,106 @@
+use crate::field::Field;
 use crate::state::State;
-use crate::Game;
 use super::Play;
 
-pub struct Bot {
-}
-
-impl Bot {
-    pub fn new() -> Self {
-        Self {}
-    }
-}
+pub struct Bot;
 
 impl Play for Bot {
-    fn make_move(&self, game: &mut Game) -> Result<(), &'static str> {
-        let len = game.row_len();
+    fn play(&self, skin: char, field: &mut Field) -> Option<char> {
+        let size = field.get_size();
+        let skins = field.get_skins();
 
-        match game.set(len / 2, len / 2) {
-            Some(value) => { 
-                if value.is_numeric() {
-                    *value = 'o';
-                    return Ok(());
-                }
-            },
+        if field[size / 2][size / 2].is_numeric() {
+            field[size / 2][size / 2] = skin;
+            return Some(skin);
+        }
 
-            None => (),
-        };
+        let mut index = (0, 0);
 
-        let mut temp = game.clone();
+        'start: for i in 0..size {
+            for j in 0..size {
+                if field[i][j].is_numeric() {
+                    field[i][j] = skin;
 
-        let mut wins = Vec::new();
-        let mut defends = Vec::new();
-        let mut nones = Vec::new();
-
-        for y in 0..len {
-            for x in 0..len {
-                if temp.field[y][x].is_numeric() {
-                    let other = temp.field[y][x];
-                    temp.field[y][x] = 'o';
-
-                    match State::calculate(&mut temp) {
-                        State::Lose => wins.push((y, x)),
-                        State::None => nones.push((y, x)),
+                    match State::check(field, skin, false) {
+                        State::Win => {
+                            field[i][j] = '0';
+                            index = (i, j);
+                            break 'start;
+                        },
+                        State::None => index = (i, j),
                         _ => (),
                     }
 
-                    temp.field[y][x] = 'x';
+                    for enemy in skins.keys() {
+                        if *enemy == skin {
+                            continue;
+                        }
 
-                    match State::calculate(&mut temp) {
-                        State::Win => defends.push((y, x)),
-                        _ => (),
+                        field[i][j] = *enemy;
+
+                        if let State::Lose = State::predict(field, *enemy) {
+                            field[i][j] = '0';
+                            index = (i, j);
+                            break 'start;
+                        }
                     }
 
-                    temp.field[y][x] = other;
+                    field[i][j] = '0';
                 }
             }
         }
 
-        for state in vec![&wins, &defends, &nones] {
-            if !state.is_empty() {
-                match game.set(state[0].0, state[0].1) {
-                    Some(value) => {
-                        *value = 'o';
-                        return Ok(());
-                    },
-
-                    None => return Err("Error, while changing ceil."),
-                }
-            }
-        }
-
-        return Err("Error, can't find any possible move.");
+        field[index.0][index.1] = skin;
+        Some(skin)
     }
 }
-
 
 
 #[cfg(test)]
 mod test {
+    use crate::play::Player;
     use super::*;
 
     #[test]
-    fn bot_move() {
-        let bot = Bot::new();
-        let mut  cases = cases();
+    fn logic() {
+        let mut cases = cases();
+        let bot = Player::new(&Bot, 'o');
 
-        let _ = bot.make_move(&mut cases[0].0);
-        assert_eq!(cases[0].0.to_string(), cases[0].1);
+        bot.play(&mut cases[0].0);
+        bot.play(&mut cases[1].0);
+        bot.play(&mut cases[2].0);
 
-        let _ = bot.make_move(&mut cases[1].0);
-        assert_eq!(cases[1].0.to_string(), cases[1].1);
-
-        let _ = bot.make_move(&mut cases[2].0);
-        assert_eq!(cases[2].0.to_string(), cases[2].1);
-
-        let _ = bot.make_move(&mut cases[3].0);
-        assert_eq!(cases[3].0.to_string(), cases[3].1);
+        assert_eq!(cases[0].0, cases[0].1);
+        assert_eq!(cases[1].0, cases[1].1);
+        assert_eq!(cases[2].0, cases[2].1);
     }
 
-    fn cases() -> Vec<(Game, String)> {
-        let case1 = Game::new();
+    fn cases() -> Vec<(Field, Field)> {
+        let center = Field::with_size(4);
+        let mut center_res = Field::with_size(4);
 
-        let case2 = Game::build_with()
-            .field(vec![vec!['1', 'x', '3'],
-                        vec!['4', 'o', 'o'],
-                        vec!['x', 'x', '9']]).build();
+        let mut win = Field::with_size(4);
+        let mut win_res = Field::with_size(4);
 
-        let case3 = Game::build_with()
-            .field(vec![vec!['o', '2', 'x'],
-                        vec!['4', 'x', 'o'],
-                        vec!['7', '8', '9']]).build();
+        let mut defense = Field::with_size(4);
+        let mut defense_res = Field::with_size(4);
 
-        let case4 = Game::build_with()
-            .field(vec![vec!['x', 'x', 'o'],
-                        vec!['4', 'o', '6'],
-                        vec!['7', '8', 'x']]).build();
+        center_res[2][2] = 'o';
 
+        win[2][1] = 'o';
+        win[2][2] = 'o';
 
-        let res1 = Game::build_with()
-            .field(vec![vec!['1', '2', '3'],
-                        vec!['4', 'o', '6'],
-                        vec!['7', '8', '9']]).build();
+        win_res[2][0] = 'o';
+        win_res[2][1] = 'o';
+        win_res[2][2] = 'o';
 
-        let res2 = Game::build_with()
-            .field(vec![vec!['1', 'x', '3'],
-                        vec!['o', 'o', 'o'],
-                        vec!['x', 'x', '9']]).build();
+        defense[2][1] = 'x';
+        defense[2][2] = 'x';
 
-        let res3 = Game::build_with()
-            .field(vec![vec!['o', '2', 'x'],
-                        vec!['4', 'x', 'o'],
-                        vec!['o', '8', '9']]).build();
+        defense_res[2][0] = 'o';
+        defense_res[2][1] = 'x';
+        defense_res[2][2] = 'x';
 
-        let res4 = Game::build_with()
-            .field(vec![vec!['x', 'x', 'o'],
-                        vec!['4', 'o', '6'],
-                        vec!['o', '8', 'x']]).build();
-
-
-        let case1 = (case1, res1.to_string());
-
-        let case2 = (case2, res2.to_string());
-
-        let case3 = (case3, res3.to_string());
-
-        let case4 = (case4, res4.to_string());
-
-        return vec![case1, case2, case3, case4];
+        vec![(center, center_res), (win, win_res), (defense, defense_res)]
     }
 }
