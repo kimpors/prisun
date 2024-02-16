@@ -6,11 +6,6 @@ This simple console-based game allows you and
 game ai to engage in the classic Tic Tac Toe        
 experience.     
 
-## Building
-
-Copy code, enter work directory and:    
-`cargo build --release`
-
 ## Contributing
 
 Contributions are welcome! If you have any      
